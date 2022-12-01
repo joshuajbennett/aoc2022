@@ -1,0 +1,56 @@
+# CMake References: https://github.com/Lectem/cpp-boilerplate/blob/master/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.17)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "Do not build in-source. Please remove CMakeCache.txt and the CMakeFiles/ directory. Then build out-of-source.")
+endif()
+
+project(aoc2022
+    VERSION 0.1.0
+    LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+if(APPLE)
+add_compile_options(-mmacosx-version-min=10.15)
+endif()
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif ()
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+
+# Standard CMake modules
+include(CTest)
+include(CMakeDependentOption)
+include(GNUInstallDirs)
+include(InstallRequiredSystemLibraries)
+include(CMakePackageConfigHelpers)
+
+# Custom modules and scripts
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake") # Make our cmake scripts available
+include(BuildHelpers)  # Helpers for writing cmake files
+
+option(ENABLE_TESTING "Should unit tests be compiled." ON)
+
+set(${PROJECT_NAME}_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    CACHE STRING "Path to install ${PROJECT_NAME} Config*.cmake files to.")
+
+####################
+##  Dependencies  ##
+####################
+
+if(ENABLE_TESTING)
+    find_package(GTest REQUIRED)
+    include(GoogleTest)
+    enable_testing()
+endif()
+
+###############
+##  Targets  ##
+###############
+
+add_subdirectory(day1)
