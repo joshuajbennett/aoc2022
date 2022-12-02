@@ -5,7 +5,7 @@
 
 // To run build the code and then do the following command:
 // ```
-// cat ../day1/in.txt | day1/part2
+// cat ../day1/in.txt | day1/day1part2
 // ```
 
 int main(int argc, char** argv) {
