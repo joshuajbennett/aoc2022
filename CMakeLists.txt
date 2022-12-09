@@ -17,6 +17,8 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 if(APPLE)
 add_compile_options(-mmacosx-version-min=10.15)
 endif()
+add_compile_options(-Wall -Wextra -pedantic -Werror=int-in-bool-context)
+
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -61,3 +63,4 @@ add_subdirectory(day5)
 add_subdirectory(day6)
 add_subdirectory(day7)
 add_subdirectory(day8)
+add_subdirectory(day9)
