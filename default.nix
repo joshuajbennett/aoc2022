@@ -6,6 +6,7 @@
 , openssl
 , c-ares
 , pkg-config
+, boost
 }:
 
 llvmPackages_11.stdenv.mkDerivation rec {
@@ -15,7 +16,7 @@ llvmPackages_11.stdenv.mkDerivation rec {
   src = ./.;
 
   nativeBuildInputs = [ cmake openssl pkg-config ];
-  buildInputs = [ protobuf grpc c-ares ];
+  buildInputs = [ protobuf grpc c-ares boost ];
 
   cmakeFlags = [
     "-DENABLE_TESTING=OFF"

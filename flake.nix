@@ -28,6 +28,7 @@
            # Build time and Run time dependencies
            c-ares
            pkg-config
+           boost
          ];
 
          # Set up environment variables for development.
