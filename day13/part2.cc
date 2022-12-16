@@ -73,8 +73,6 @@ void renderEntries(const std::vector<Entry>& entries) {
 }
 
 std::optional<bool> compareEntries(const std::string left, const std::string right) {
-  // std::cout << std::endl;
-  // std::cout << "Left: " << left << " Right: " << right << std::endl;
   if (left.size() == 0 && right.size() == 0) {
     return std::nullopt;
   }
@@ -86,11 +84,9 @@ std::optional<bool> compareEntries(const std::string left, const std::string rig
   }
   auto leftEntries = getEntries(left);
   auto rightEntries = getEntries(right);
-  // std::cout << "NumLeftEntries: " << leftEntries.size() << " NumRightEntries: " << rightEntries.size() << std::endl;
   for (int i = 0; i < leftEntries.size() && i < rightEntries.size(); ++i) {
     auto leftEntry = leftEntries[i];
     auto rightEntry = rightEntries[i];
-    // std::cout << "Left Entry: " << leftEntry << " Right Entry: " << rightEntry << std::endl;
     if (leftEntry.type == EntryType::Value && rightEntry.type == EntryType::Value) {
       int leftVal = std::stoi(leftEntry.data);
       int rightVal = std::stoi(rightEntry.data);
@@ -127,13 +123,6 @@ std::optional<bool> compareEntries(const std::string left, const std::string rig
   return std::nullopt;
 }
 
-// enum class EntryType { List, Value };
-//
-// struct Entry {
-//   std::string data;
-//   EntryType type;
-// };
-
 int main(int argc, char** argv) {
   std::string line;
   std::vector<std::string> lines;
@@ -153,9 +142,6 @@ int main(int argc, char** argv) {
     }
     return false;
   });
-  for (const auto& line : lines) {
-    std::cout << line << std::endl;
-  }
   int firstIndex = 1;
   bool foundFirst = false;
   int secondIndex = 1;
@@ -171,6 +157,9 @@ int main(int argc, char** argv) {
     if (!foundFirst) {
       firstIndex++;
     }
+  }
+  for (const auto& line : lines) {
+    std::cout << line << std::endl;
   }
   std::cout << "Multiplied indices = " << secondIndex * firstIndex << std::endl;
   return 0;

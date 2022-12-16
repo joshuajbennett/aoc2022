@@ -40,11 +40,12 @@ struct QueuedAction {
 
 int releasePressure(const std::unordered_map<std::string, Valve>& valves, const int timeLeft,
                     const std::string location, const int currentScore,
-                    const std::unordered_set<std::string>& nodesOfInterest, const QueuedAction otherAction) {
+                    const std::unordered_set<std::string>& nodesOfInterest,
+                    const std::optional<QueuedAction> otherAction) {
   auto& node = valves.at(location);
 
+  // Compiling a list of scores from the recursion.
   std::vector<int> scores;
-
   for (const auto& newValve : nodesOfInterest) {
     const auto& dist = node.tunnelTimes.at(newValve);
     int newTime = timeLeft - dist - 1;
@@ -52,11 +53,28 @@ int releasePressure(const std::unordered_map<std::string, Valve>& valves, const 
       continue;
     }
     const auto& newNode = valves.at(newValve);
-    int newScore = currentScore + newTime * newNode.flowRate;
+    int additionalScore = newTime * newNode.flowRate;
     auto newNodesOfInterest = nodesOfInterest;
     newNodesOfInterest.erase(newValve);
-    scores.push_back(releasePressure(valves, newTime, newValve, newScore, newNodesOfInterest));
+    if (otherAction.has_value()) {
+      auto action = otherAction.value();
+      if (newTime < action.timeLeft) {
+        int newScore = currentScore + action.additionalScore;
+        scores.push_back(releasePressure(valves, action.timeLeft, action.location, newScore, newNodesOfInterest,
+                                         QueuedAction{newValve, newTime, additionalScore}));
+        continue;
+      }
+    }
+    int newScore = currentScore + additionalScore;
+    scores.push_back(releasePressure(valves, newTime, newValve, newScore, newNodesOfInterest, otherAction));
   }
+  if (otherAction.has_value()) {
+    auto action = otherAction.value();
+    int newScore = currentScore + action.additionalScore;
+    scores.push_back(
+        releasePressure(valves, action.timeLeft, action.location, newScore, nodesOfInterest, std::nullopt));
+  }
+
   if (scores.empty()) {
     return currentScore;
   }
