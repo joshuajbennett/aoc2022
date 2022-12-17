@@ -48,7 +48,6 @@ struct Landed {
   std::deque<std::vector<bool>> rows;
   long long currentHeight = 0;
   long long width = 7;
-  long long numObjects = 0;
   long long maxHeight = 60;
   bool collides(const Object& newObject) const {
     if (newObject.pos.x <= 0) {
@@ -98,7 +97,6 @@ struct Landed {
   }
 
   void append(const Object& newObject) {
-    numObjects++;
     long long potentialNewHeight = newObject.pos.y + newObject.sprite.height - 1;
     if (potentialNewHeight > currentHeight) {
       std::vector<bool> row(width + 2, false);
@@ -158,6 +156,13 @@ void renderRocks(const Landed& landed, const Object& object) {
   std::cout << std::endl;
 }
 
+struct BrickConfig {
+  long long currentHeight;
+  long long numRocks;
+  int spriteIndex;
+  int jetsIndex;
+};
+
 int main(int argc, char** argv) {
   std::string line;
 
@@ -176,6 +181,7 @@ int main(int argc, char** argv) {
       return -1;
     }
   }
+  std::cout << "Total Jets: " << jets.size() << std::endl;
 
   std::vector<Sprite> sprites;
   // Horizontal bar.
@@ -194,8 +200,9 @@ int main(int argc, char** argv) {
   int spriteIndex = 0;
   int jetsIndex = 0;
 
-  int numRocks = 0;
+  long long numRocks = 0;
   long long maxNumRocks = 1000000000000;
+  // long long maxNumRocks = 1000000;
   // long long maxNumRocks = 2022;
   // long long maxNumRocks = 12;
 
@@ -205,20 +212,60 @@ int main(int argc, char** argv) {
     landed.rows.push_front(row);
   }
 
+  std::unordered_map<unsigned long long, BrickConfig> memory;
+
+  bool skipAhead = true;
   numRocks++;
   while (numRocks <= maxNumRocks) {
-    Object newRock{sprites[spriteIndex], Pos{3, landed.currentHeight + 4}};
-    if (landed.numObjects % 5000000 == 0) {
-      // renderRocks(landed, newRock);
-      std::cout << "Current Height: " << landed.currentHeight
-                << " Progress: " << static_cast<float>(landed.numObjects) / static_cast<float>(maxNumRocks) * 100
-                << std::endl;
+    if (skipAhead) {
+      // Try to cache when we are in this state.
+      // Hash the first four rows, the sprite index, and the jets index. Look for a repetition.
+      unsigned long long hash = 1;
+      for (int x = 1; x <= 8; ++x) {
+        for (int y = 0; y < 8; ++y) {
+          if (landed.rows[y][x]) {
+            hash = hash * 2;
+          }
+        }
+      }
+      hash = hash * (spriteIndex + 1);
+      hash = hash * (jetsIndex + 1);
+      auto it = memory.find(hash);
+      if (it != memory.end()) {
+        unsigned long long heightDiff = landed.currentHeight - it->second.currentHeight;
+        unsigned long long numRocksDiff = numRocks = it->second.numRocks;
+        // if (heightDiff > 500'000) {
+        if (numRocksDiff > 20) {
+          std::cout << "Current Height: " << landed.currentHeight << " numRocks: " << numRocks
+                    << " spriteIndex: " << spriteIndex << " jetsIndex: " << jetsIndex << std::endl;
+          std::cout << "Found a match! Diff: " << landed.currentHeight - it->second.currentHeight << std::endl;
+          std::cout << "Num rocks diff: " << numRocksDiff << std::endl;
+          skipAhead = false;
+          unsigned long long rocksToGo = maxNumRocks - numRocks;
+          unsigned long long numSteps = rocksToGo / numRocksDiff - 1;
+          numRocks = numRocks + numSteps * numRocksDiff;
+          std::cout << "NumSteps: " << numSteps << " heightDiff: " << heightDiff << std::endl;
+          landed.currentHeight = landed.currentHeight + numSteps * heightDiff;
+          std::cout << "Final num rocks: " << numRocks << " Final height: " << landed.currentHeight << std::endl;
+        }
+      }
+      memory[hash] = BrickConfig{landed.currentHeight, numRocks, spriteIndex, jetsIndex};
     }
+
+    Object newRock{sprites[spriteIndex], Pos{3, landed.currentHeight + 4}};
 
     spriteIndex++;
     if (spriteIndex >= sprites.size()) {
       spriteIndex = 0;
     }
+
+    // struct BrickConfig {
+    //     int currentHeight;
+    //     int numRocks;
+    //     int spriteIndex;
+    //     int jetsIndex;
+    // };
+
     // renderRocks(landed, newRock);
     while (!landed.collides(newRock)) {
       // renderRocks(landed, newRock);
@@ -245,8 +292,9 @@ int main(int argc, char** argv) {
     }
     newRock.pos.y++;
     landed.append(newRock);
+    numRocks++;
     // renderRocks(landed, newRock);
-    if (landed.numObjects >= maxNumRocks) {
+    if (numRocks >= maxNumRocks) {
       std::cout << "Height: " << landed.currentHeight << std::endl;
       return 0;
     }
