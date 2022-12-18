@@ -219,7 +219,6 @@ int main(int argc, char** argv) {
   bool skipAhead = true;
   while (numRocks <= maxNumRocks) {
     if (skipAhead) {
-      // std::cout << "Computing hash " << std::endl;
       // Try to cache when we are in this state.
       // Hash the first four rows, the sprite index, and the jets index. Look for a repetition.
       std::string hash;
@@ -238,42 +237,6 @@ int main(int argc, char** argv) {
       char thing1 = static_cast<char>(additionalHash);
       char thing2 = static_cast<char>(additionalHash >> 8);
       hash = hash + thing1 + thing2;
-      // if (hash == "p p x?") {
-      //   printDueToHash = true;
-      // }
-      // if (hash == 6935614139850031534) {
-      //   std::cout << "Visualize:" << std::endl;
-      //   unsigned long long hash = 0;
-      //   for (int y = 0; y < 7; ++y) {
-      //     unsigned long long thing{0};
-      //     for (int x = 1; x <= 8; ++x) {
-      //       if (landed.rows[y][x]) {
-      //         std::cout << "X";
-      //       } else {
-      //         std::cout << ".";
-      //       }
-      //       if (landed.rows[y][x]) {
-      //         // std::cout << "Had a thing at index " << x << std::endl;
-      //         thing = thing | 1;
-      //       }
-      //       thing = thing << 1;
-      //     }
-      //     hash |= static_cast<unsigned long long>(thing);
-      //     hash = hash << 8;
-
-      //     std::cout << std::endl;
-      //     std::cout << static_cast<unsigned long long>(thing) << std::endl;
-      //     std::cout << hash << std::endl;
-      //   }
-      //   std::cout << std::endl;
-      //   unsigned long long additionalHash = spriteIndex * jets.size() + jetsIndex;
-      //   hash = hash << 8;
-      //   hash |= static_cast<unsigned long long>(additionalHash);
-      //   std::cout << hash << std::endl;
-      //   std::cout << static_cast<unsigned long long>(additionalHash) << std::endl;
-
-      //   printDueToHash = true;
-      // }
       auto it = memory.find(hash);
       if (it != memory.end()) {
         unsigned long long heightDiff = landed.currentHeight - it->second.currentHeight;
@@ -297,9 +260,6 @@ int main(int argc, char** argv) {
         std::cout << "Final num rocks: " << numRocks << " Final height: " << landed.currentHeight << std::endl;
         // printDueToHash = true;
       }
-      // if (numRocks == 43) {
-      //   printDueToHash = true;
-      // }
       memory[hash] = BrickConfig{landed.currentHeight, numRocks, spriteIndex, jetsIndex};
     }
 
@@ -310,20 +270,12 @@ int main(int argc, char** argv) {
       spriteIndex = 0;
     }
 
-    // struct BrickConfig {
-    //     int currentHeight;
-    //     int numRocks;
-    //     int spriteIndex;
-    //     int jetsIndex;
-    // };
-
     if (printDueToHash) {
       std::cout << "A hash!" << std::endl;
       renderRocks(landed, newRock);
       printDueToHash = false;
     }
     while (!landed.collides(newRock)) {
-      // renderRocks(landed, newRock);
       if (jets[jetsIndex] == Jet::Left) {
         // Try to move left.
         newRock.pos.x--;
@@ -337,7 +289,6 @@ int main(int argc, char** argv) {
           newRock.pos.x--;
         }
       }
-      // renderRocks(landed, newRock);
       jetsIndex++;
       if (jetsIndex >= jets.size()) {
         jetsIndex = 0;
@@ -348,7 +299,6 @@ int main(int argc, char** argv) {
     newRock.pos.y++;
     landed.append(newRock);
     numRocks++;
-    // renderRocks(landed, newRock);
     if (numRocks >= maxNumRocks) {
       std::cout << "Height: " << landed.currentHeight << std::endl;
       return 0;
