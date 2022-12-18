@@ -124,7 +124,7 @@ void renderRocks(const Landed& landed, const Object& object) {
   long long currentHeight = landed.currentHeight;
   int numY = 0;
   long long firstY = std::max(topOfObject, currentHeight);
-  for (long long y = firstY; y >= firstY - 15; --y) {
+  for (long long y = firstY; y >= firstY - 35; --y) {
     numY++;
     if (numY > 60) {
       std::cout << std::endl;
@@ -202,9 +202,9 @@ int main(int argc, char** argv) {
   int jetsIndex = 0;
 
   long long numRocks = 0;
-  // long long maxNumRocks = 1000000000000;
+  long long maxNumRocks = 1000000000000;
   // long long maxNumRocks = 1000000;
-  long long maxNumRocks = 2022;
+  // long long maxNumRocks = 2022;
   // long long maxNumRocks = 12;
 
   Landed landed;
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     landed.rows.push_front(row);
   }
 
-  std::unordered_map<unsigned long long, BrickConfig> memory;
+  std::unordered_map<std::string, BrickConfig> memory;
 
   bool printDueToHash = false;
   bool skipAhead = true;
@@ -222,9 +222,9 @@ int main(int argc, char** argv) {
       // std::cout << "Computing hash " << std::endl;
       // Try to cache when we are in this state.
       // Hash the first four rows, the sprite index, and the jets index. Look for a repetition.
-      unsigned long long hash = 0;
-      for (int y = 0; y < 7; ++y) {
-        unsigned long long thing{0};
+      std::string hash;
+      for (int y = 0; y < 45; ++y) {
+        char thing;
         for (int x = 1; x <= 8; ++x) {
           if (landed.rows[y][x]) {
             // std::cout << "Had a thing at index " << x << std::endl;
@@ -232,17 +232,15 @@ int main(int argc, char** argv) {
           }
           thing = thing << 1;
         }
-        // std::cout << static_cast<int>(thing) << std::endl;
-        hash |= thing;
-        hash = hash << 8;
-        // std::cout << hash << std::endl;
+        hash = hash + thing;
       }
-      unsigned long long additionalHash = spriteIndex * jets.size() + jetsIndex;
-      hash = hash << 8;
-      hash |= additionalHash;
-      // std::cout << "Finished Computing hash " << std::endl;
-      // hash = hash + ;
-
+      unsigned int additionalHash = spriteIndex * jets.size() + jetsIndex;
+      char thing1 = static_cast<char>(additionalHash);
+      char thing2 = static_cast<char>(additionalHash >> 8);
+      hash = hash + thing1 + thing2;
+      // if (hash == "p p x?") {
+      //   printDueToHash = true;
+      // }
       // if (hash == 6935614139850031534) {
       //   std::cout << "Visualize:" << std::endl;
       //   unsigned long long hash = 0;
@@ -277,25 +275,30 @@ int main(int argc, char** argv) {
       //   printDueToHash = true;
       // }
       auto it = memory.find(hash);
-      // if (it != memory.end()) {
-      //   unsigned long long heightDiff = landed.currentHeight - it->second.currentHeight;
-      //   unsigned long long numRocksDiff = numRocks = it->second.numRocks;
-      //   if (spriteIndex != it->second.spriteIndex) {
-      //     throw std::runtime_error("Sprite Index Mismatch");
-      //   }
-      //   if (jetsIndex != it->second.jetsIndex) {
-      //     throw std::runtime_error("Jets Index Mismatch");
-      //   }
-      //   std::cout << "Matching hash: " << hash << std::endl;
-      //   std::cout << "Found a match! Height difference: " << heightDiff << std::endl;
-      //   std::cout << "Num rocks diff: " << numRocksDiff << std::endl;
-      //   skipAhead = false;
-      //   unsigned long long rocksToGo = maxNumRocks - numRocks;
-      //   unsigned long long numSteps = rocksToGo / numRocksDiff - 1;
-      //   numRocks = numRocks + numSteps * numRocksDiff;
-      //   landed.currentHeight = landed.currentHeight + numSteps * heightDiff;
-      //   std::cout << "NumSteps: " << numSteps << " heightDiff: " << heightDiff << std::endl;
-      //   std::cout << "Final num rocks: " << numRocks << " Final height: " << landed.currentHeight << std::endl;
+      if (it != memory.end()) {
+        unsigned long long heightDiff = landed.currentHeight - it->second.currentHeight;
+        unsigned long long numRocksDiff = numRocks - it->second.numRocks;
+        if (spriteIndex != it->second.spriteIndex) {
+          throw std::runtime_error("Sprite Index Mismatch");
+        }
+        if (jetsIndex != it->second.jetsIndex) {
+          throw std::runtime_error("Jets Index Mismatch");
+        }
+        std::cout << "Found a match! Height difference: " << heightDiff << std::endl;
+        std::cout << "Sprite Index: " << spriteIndex << " Jets Index: " << jetsIndex << std::endl;
+        std::cout << "Original num rocks: " << it->second.numRocks << std::endl;
+        std::cout << "Num rocks diff: " << numRocksDiff << std::endl;
+        skipAhead = false;
+        unsigned long long rocksToGo = maxNumRocks - numRocks;
+        unsigned long long numSteps = rocksToGo / numRocksDiff - 1;
+        numRocks = numRocks + numSteps * numRocksDiff;
+        landed.currentHeight = landed.currentHeight + numSteps * heightDiff;
+        std::cout << "NumSteps: " << numSteps << " heightDiff: " << heightDiff << std::endl;
+        std::cout << "Final num rocks: " << numRocks << " Final height: " << landed.currentHeight << std::endl;
+        // printDueToHash = true;
+      }
+      // if (numRocks == 43) {
+      //   printDueToHash = true;
       // }
       memory[hash] = BrickConfig{landed.currentHeight, numRocks, spriteIndex, jetsIndex};
     }
