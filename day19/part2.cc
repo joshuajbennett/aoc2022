@@ -63,5 +63,6 @@ int main(int argc, char** argv) {
     qualityProd = qualityProd * geodes;
   }
   // 2700 too low :(
+  // 2550 too low :(
   std::cout << "Quality product of all blueprints: " << qualityProd << std::endl;
 }
