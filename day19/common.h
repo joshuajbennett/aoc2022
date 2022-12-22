@@ -174,7 +174,9 @@ int evaluate(const Blueprint& blueprint, const Robots& robots, const Resources& 
     auto oreTimeRequired = timeRequired(robotsAtEnd, resourcesAtEnd, blueprint.oreRobotCost);
     if (oreTimeRequired.has_value()) {
       auto oreTimeReq = oreTimeRequired.value();
-      if (oreTimeReq <= timeLeft) {
+      auto maxOreRobots = std::max(std::max(blueprint.clayRobotCost.oreCost, blueprint.obsidianRobotCost.oreCost),
+                                   blueprint.geodeRobotCost.oreCost);
+      if (oreTimeReq <= timeLeft && robotsAtEnd.oreRobots <= maxOreRobots) {
         ableToBuild = true;
         if (inParallel) {
           numThreads++;
@@ -198,8 +200,7 @@ int evaluate(const Blueprint& blueprint, const Robots& robots, const Resources& 
       auto clayTimeRequired = timeRequired(robotsAtEnd, resourcesAtEnd, blueprint.clayRobotCost);
       if (clayTimeRequired.has_value()) {
         auto clayTimeReq = clayTimeRequired.value();
-        // if (clayTimeReq <= timeLeft && clayTimeReq < 2 * oreTimeReq) {
-        if (clayTimeReq <= timeLeft) {
+        if (clayTimeReq <= timeLeft && robotsAtEnd.clayRobots <= blueprint.obsidianRobotCost.clayCost) {
           ableToBuild = true;
           if (inParallel) {
             numThreads++;
@@ -222,12 +223,7 @@ int evaluate(const Blueprint& blueprint, const Robots& robots, const Resources& 
         auto obsidianTimeRequired = timeRequired(robotsAtEnd, resourcesAtEnd, blueprint.obsidianRobotCost);
         if (obsidianTimeRequired.has_value()) {
           auto obsidianTimeReq = obsidianTimeRequired.value();
-          bool couldBuildMoreOreForObsidian =
-              (obsidianTimeReq * robotsAtEnd.oreRobots + resourcesAtEnd.ore) >
-              (std::max(std::max(blueprint.oreRobotCost.oreCost, blueprint.clayRobotCost.oreCost),
-                        blueprint.geodeRobotCost.oreCost) +
-               blueprint.obsidianRobotCost.oreCost);
-          if (obsidianTimeReq <= timeLeft && !(couldBuildMoreOreForObsidian)) {
+          if (obsidianTimeReq <= timeLeft && robotsAtEnd.obsidianRobots <= blueprint.geodeRobotCost.obsidianCost) {
             ableToBuild = true;
             if (inParallel) {
               numThreads++;
@@ -255,7 +251,7 @@ int evaluate(const Blueprint& blueprint, const Robots& robots, const Resources& 
                 (std::max(std::max(blueprint.oreRobotCost.oreCost, blueprint.clayRobotCost.oreCost),
                           blueprint.obsidianRobotCost.oreCost) +
                  blueprint.geodeRobotCost.oreCost);
-            if (timeReq <= timeLeft && !(couldBuildMoreOreForGeode)) {
+            if (timeReq <= timeLeft) { // && !(couldBuildMoreOreForGeode)) {
               ableToBuild = true;
               if (inParallel) {
                 numThreads++;
