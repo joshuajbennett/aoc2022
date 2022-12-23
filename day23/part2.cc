@@ -52,12 +52,68 @@ void render(const std::vector<std::vector<bool>>& grid) {
       }
     }
   }
-  for (int y = minY; y <= maxY; ++y) {
-    for (int x = minX; x <= maxX; ++x) {
+  for (int y = minY; y <= maxY; y = y + 2) {
+    for (int x = minX; x <= maxX; x = x + 2) {
       if (grid[y][x]) {
-        std::cout << "#";
+        if (grid[y + 1][x]) {
+          if (grid[y][x + 1]) {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▓";
+            } else {
+              std::cout << "▛";
+            }
+          } else {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▙";
+            } else {
+              std::cout << "▌";
+            }
+          }
+        } else {
+          if (grid[y][x + 1]) {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▜";
+            } else {
+              std::cout << "▀";
+            }
+          } else {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▚";
+            } else {
+              std::cout << "▘";
+            }
+          }
+        }
       } else {
-        std::cout << ".";
+        if (grid[y + 1][x]) {
+          if (grid[y][x + 1]) {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▟";
+            } else {
+              std::cout << "▞";
+            }
+          } else {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▄";
+            } else {
+              std::cout << "▖";
+            }
+          }
+        } else {
+          if (grid[y][x + 1]) {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▐";
+            } else {
+              std::cout << "▝";
+            }
+          } else {
+            if (grid[y + 1][x + 1]) {
+              std::cout << "▗";
+            } else {
+              std::cout << " ";
+            }
+          }
+        }
       }
     }
     std::cout << std::endl;
@@ -86,8 +142,8 @@ int main(int argc, char** argv) {
   }
   std::deque<Dir> directions{Dir::North, Dir::South, Dir::West, Dir::East};
   for (int round = 0; round < 2000; round++) {
-    // render(grid);
-    // std::cout << std::endl;
+    render(grid);
+    std::cout << std::endl;
     // Consider decisions.
     std::vector<Decision> decisions;
     std::vector<int> proposedRow(width, 0);
