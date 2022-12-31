@@ -114,7 +114,7 @@ bool inBounds(const Loc& loc, const int width, const int height) {
 }
 
 int search(const Loc& initialLoc, const Loc& finalLoc, const int maxNumPropagations, const int initialTime,
-           std::vector<std::vector<std::vector<State>>> propagatedGrids) {
+           bool searchBelow, std::vector<std::vector<std::vector<State>>> propagatedGrids) {
   int width = propagatedGrids.front().front().size();
   int height = propagatedGrids.front().size();
   for (int i = 0; i < propagatedGrids.size() - 1; ++i) {
@@ -158,9 +158,16 @@ int search(const Loc& initialLoc, const Loc& finalLoc, const int maxNumPropagati
       if (visiting.timeTraveled < maxNumPropagations - 2) {
         int distFromFinal = std::abs(visiting.location.x - finalLoc.x) + std::abs(visiting.location.y - finalLoc.y);
         toVisit.push(NextNode{visiting.location, visiting.timeTraveled + 1, distFromFinal});
-        Loc below{visiting.location.x, visiting.location.y + 1};
-        if (!nextGrid[below.y][below.x].isOccupied) {
-          toVisit.push(NextNode{below, visiting.timeTraveled + 1, distFromFinal});
+        if (searchBelow) {
+          Loc below{visiting.location.x, visiting.location.y + 1};
+          if (!nextGrid[below.y][below.x].isOccupied) {
+            toVisit.push(NextNode{below, visiting.timeTraveled + 1, distFromFinal});
+          }
+        } else {
+          Loc above{visiting.location.x, visiting.location.y - 1};
+          if (!nextGrid[above.y][above.x].isOccupied) {
+            toVisit.push(NextNode{above, visiting.timeTraveled + 1, distFromFinal});
+          }
         }
       }
     } else {
@@ -252,11 +259,11 @@ int main(int argc, char** argv) {
   }
   std::cout << "Width: " << width << " Height: " << height << std::endl;
 
-  auto numSteps = search(initialLoc, finalLoc, maxNumPropagations, 0, propagatedGrids);
+  auto numSteps = search(initialLoc, finalLoc, maxNumPropagations, 0, true, propagatedGrids);
   std::cout << "Num steps: " << numSteps << std::endl;
-  auto nextNumSteps = search(finalLoc, initialLoc, maxNumPropagations, numSteps, propagatedGrids);
+  auto nextNumSteps = search(finalLoc, initialLoc, maxNumPropagations, numSteps, false, propagatedGrids);
   std::cout << "Next num steps: " << nextNumSteps << std::endl;
-  auto finalNumSteps = search(initialLoc, finalLoc, maxNumPropagations, nextNumSteps, propagatedGrids);
+  auto finalNumSteps = search(initialLoc, finalLoc, maxNumPropagations, nextNumSteps, true, propagatedGrids);
   std::cout << "Took " << finalNumSteps << " to reach the end." << std::endl;
   // 843 too small.
   return 0;
